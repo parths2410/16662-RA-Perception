@@ -15,8 +15,13 @@ class PerceptionPlanner:
 
         service_name = '/perception_planner_srv'
         s = rospy.Service(service_name, PerceivePlan, self.handle_perception_planner)
+        
+        pcd_sub = rospy.Subscriber('/points2', PointCloud2, self.pcd_callback)
+
         rospy.loginfo('Service %s is ready', service_name)
-    
+
+        object_center = (0, -0.17)
+
         rospy.spin()
     
     def handle_perception_planner(self, req):
@@ -27,9 +32,7 @@ class PerceptionPlanner:
         pcd_msg = rospy.wait_for_message('/points2', PointCloud2)
 
         # Extract 5x5 region - X (-0.2 to 0.2) and Y (0 to -0.4)
-        pcd = np.array(read_points_list(pcd_msg, field_names=("x", "y", "z"), skip_nans=True))
-
-        pcd_filtered = self.filter_pcd(pcd, x_range=(-0.2, 0.2), y_range=(-0.4, 0))
+        self.pcd = np.array(read_points_list(pcd_msg, field_names=("x", "y", "z"), skip_nans=True))
 
 
         return PerceivePlanResponse(True)
@@ -44,3 +47,14 @@ class PerceptionPlanner:
         
         return pcd
     
+    def pcd_callback(self, msg):
+        rospy.loginfo('Point Cloud Received')
+
+    def get_shape_points(self, shape):
+        pass
+
+    def find_depth(self, x, y) :
+        pass
+
+    def generate_path_message(self, path_points):
+        pass
