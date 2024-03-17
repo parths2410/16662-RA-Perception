@@ -18,9 +18,9 @@ class PerceptionPlanner:
         service_name = '/perception_planner_srv'
         s = rospy.Service(service_name, PerceivePlan, self.handle_perception_planner)
         
-        pcd_sub = rospy.Subscriber('/points2', PointCloud2, self.pcd_callback)
+        # pcd_sub = rospy.Subscriber('/points2', PointCloud2, self.pcd_callback)
 
-        filtered_pub = rospy.Publisher('/filtered_pcd', PointCloud2, queue_size=10)
+        self.filtered_pub = rospy.Publisher('/filtered_pcd', PointCloud2, queue_size=10)
 
         rospy.loginfo('Service %s is ready', service_name)
 
@@ -32,11 +32,26 @@ class PerceptionPlanner:
         rospy.loginfo('Perception Planner Service Called')
 
         shape = req.shape
+        print("Shape received ", shape)
 
+        print("Waiting for Pointcloud")
         pcd_msg = rospy.wait_for_message('/points2', PointCloud2)
-
         self.frame_id = pcd_msg.header.frame_id
+        print("Pointcloud received. In frame - ", self.frame_id)
 
+        print("Numpying pcd")
+        pcd_np = np.array(list(read_points_list(pcd_msg)))[:, :3]
+        print("PCD Shape - ", pcd_np.shape)
+
+        print("Filtering")
+        pcd_np_filtered = self.filter_pcd(pcd_np, (-0.2, 0.2), (-0.4, 0))
+        print("PCD Filtered Shape - ", pcd_np_filtered.shape)
+        
+        print("Publishing filtered")
+        filtered_msg = self.generate_pc2_msg(pcd_np_filtered)
+        self.filtered_pub.publish(filtered_msg)
+        
+        path_2d = 
 
         return PerceivePlanResponse(True)
     
@@ -59,7 +74,7 @@ class PerceptionPlanner:
 
         pcd_arr_filtered = self.filter_pcd(pcd_arr, (-0.2, 0.2), (-0.4, 0))
 
-        filtered_msg = self.make_pc2_msg(pcd_arr_filtered)
+        filtered_msg = self.generate_pc2_msg(pcd_arr_filtered)
         self.pcd_pub.publish(filtered_msg)
 
 
@@ -73,7 +88,7 @@ class PerceptionPlanner:
     def generate_path_message(self, path_points):
         pass
 
-    def make_pc2_msg(self, pcd_arr):
+    def generate_pc2_msg(self, pcd_arr):
         fields = [PointField('x', 0, PointField.FLOAT32, 1),
                 PointField('y', 4, PointField.FLOAT32, 1),
                 PointField('z', 8, PointField.FLOAT32, 1),
@@ -85,3 +100,6 @@ class PerceptionPlanner:
 
         pc2_msg = create_cloud(header, fields, pcd_arr)
         return pc2_msg
+
+if __name__=="__main__":
+    p = PerceptionPlanner()
