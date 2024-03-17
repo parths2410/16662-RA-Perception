@@ -1,0 +1,3 @@
+string shape
+---
+nav_msgs/Path plan
