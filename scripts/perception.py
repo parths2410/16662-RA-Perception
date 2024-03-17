@@ -7,6 +7,7 @@ from sensor_msgs.msg import PointCloud2
 from sensor_msgs.point_cloud2 import read_points_list
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 class PerceptionPlanner:
     def __init__(self):
@@ -27,6 +28,14 @@ class PerceptionPlanner:
         #center(offset)
         self.c_x = 2
         self.c_y = 2
+        #desired shape
+        self.shape = "rectangle"
+        #desired radius
+        self.radius = 5
+        #desired length and breadth
+        self.length = 10
+        self.breadth = 5
+
         
 
         rospy.spin()
@@ -59,8 +68,9 @@ class PerceptionPlanner:
 
 
     #helper functions for generating points
-    def generate_rectangle_points(self, l, b):
-
+    def generate_rectangle_points(self):
+        l = self.length
+        b = self.breadth
 
         # Calculate corner points
         top_right = (l/2 + self.c_x, b/2 + self.c_y)
@@ -83,19 +93,25 @@ class PerceptionPlanner:
         
         return points
 
-    def generate_circle_points(self, r):
+    def generate_circle_points(self):
         # Determine the number of points needed: using circumference as 2*pi*r
-        circumference = 2 * np.pi * r
+        circumference = 2 * np.pi * self.radius
         num_points = int(circumference / 2e-2)
         
         # Generate points along the circumference
         theta = np.linspace(0, 2 * np.pi, num_points, endpoint=False)
-        points = [(r * np.cos(t) + self.c_x, r * np.sin(t) + self.c_y) for t in theta]
+        points = [(self.radius * np.cos(t) + self.c_x, self.radius * np.sin(t) + self.c_y) for t in theta]
         
         return points
         
-    def get_shape_points(self, shape):
-        self.points = self.generate_rectangle_points(10, 5)
+    def get_shape_points(self):
+        if self.shape == "rectangle":
+            return self.generate_rectangle_points()
+        elif self.shape == "circle":
+            return self.generate_circle_points()
+        else:
+            rospy.loginfo('Invalid shape')
+            return []
 
 
 
