@@ -123,13 +123,13 @@ class PerceptionPlanner:
 
     def get_shape_points(self, shape):
         if shape == "rectangle":
-            l, b = 0.2, 0.3
+            l, b = 0.24, 0.15
             points = self.shape_gen.generate_rectangle_points(l, b)
         elif shape == "circle":
-            r = 0.2
+            r = 0.12
             points = self.shape_gen.generate_circle_points(r)
         elif shape == "square":
-            l, b = 0.2, 0.2
+            l, b = 0.24, 0.24
             points = self.shape_gen.generate_rectangle_points(l, b)
 
         return points
