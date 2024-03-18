@@ -7,7 +7,8 @@ from sensor_msgs.msg import PointCloud2
 from sensor_msgs.point_cloud2 import read_points_list, create_cloud
 from sensor_msgs.msg import PointField
 from std_msgs.msg import Header
-from nav_msgs.msg import Path, PoseStamped
+from nav_msgs.msg import Path
+from geometry_msgs.msg import PoseStamped
 
 import numpy as np
 
@@ -60,6 +61,7 @@ class PerceptionPlanner:
         # pcd_sub = rospy.Subscriber('/points2', PointCloud2, self.pcd_callback)
 
         self.filtered_pub = rospy.Publisher('/filtered_pcd', PointCloud2, queue_size=10)
+        self.path_pub = rospy.Publisher('/path', Path, queue_size=1)
 
         rospy.loginfo('Service %s is ready', service_name)
 
@@ -94,8 +96,10 @@ class PerceptionPlanner:
         
         path_2d = self.get_shape_points(shape)
         path_3d = self.project_to_pcd(path_2d)
+        print("Path length - ", path_3d.shape)
 
         path_msg = self.generate_path_message(path_3d)
+        self.path_pub.publish(path_msg)
 
         return PerceivePlanResponse(path_msg)
     
